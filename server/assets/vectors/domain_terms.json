@@ -1,0 +1,26 @@
+{
+  "domain_terms": [
+    "DRA",
+    "ResourceClaim",
+    "ResourceSlice",
+    "kube-controller-manager",
+    "kube-scheduler",
+    "kubelet",
+    "PodGroup",
+    "CRI",
+    "CNI",
+    "CSI",
+    "e2e",
+    "CI",
+    "goroutine",
+    "preemption",
+    "topology manager",
+    "structured allocator",
+    "shared counter",
+    "InPlacePodVerticalScaling",
+    "checkpoint",
+    "criu",
+    "ShardSelector",
+    "SelectionPredicate"
+  ]
+}

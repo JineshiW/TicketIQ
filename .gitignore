@@ -1,0 +1,26 @@
+# Python virtual environment
+server/venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Qdrant local database
+server/qdrant_db/
+server/chroma_db/
+
+# Node
+client/node_modules/
+client/dist/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
