@@ -47,7 +47,7 @@ logger = logging.getLogger("TicketIQ")
 # ============================================================
 
 llm = ChatOllama(
-    model="llama3.2:latest",
+    model="llama3.1:latest",
     temperature=0,
     num_predict=256,
     keep_alive="10m",
