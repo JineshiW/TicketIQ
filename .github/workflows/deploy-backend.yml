@@ -1,4 +1,3 @@
-```yaml
 name: TicketIQ Cloud Backend
 
 on:
@@ -396,4 +395,3 @@ jobs:
             echo "$(date '+%Y-%m-%d %H:%M:%S') - TicketIQ backend still running..."
             sleep 300
           done
-```
