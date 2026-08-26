@@ -37,8 +37,10 @@ jobs:
       - name: Restore Ollama cache
         uses: actions/cache@v4
         with:
-          path: ~/.ollama
-          key: ${{ runner.os }}-ollama-llama3.1-v1
+          path: |
+            ~/.ollama
+            /usr/share/ollama
+          key: ${{ runner.os }}-ollama-llama3.1-v2
           restore-keys: |
             ${{ runner.os }}-ollama-
 
@@ -74,7 +76,14 @@ jobs:
 
       - name: Install Ollama
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
+          if command -v ollama >/dev/null 2>&1; then
+            echo "Ollama already installed."
+            ollama --version
+          else
+            echo "Installing Ollama..."
+            curl -fsSL https://ollama.com/install.sh | sh
+            ollama --version
+          fi
 
 
       # ============================================================
@@ -83,10 +92,36 @@ jobs:
 
       - name: Start Ollama
         run: |
-          nohup ollama serve > /tmp/ollama.log 2>&1 &
-          sleep 5
+          echo "Starting Ollama..."
 
-          echo "Checking Ollama..."
+          nohup ollama serve > /tmp/ollama.log 2>&1 &
+          OLLAMA_PID=$!
+
+          echo "Ollama PID: $OLLAMA_PID"
+
+          echo "Waiting for Ollama API..."
+
+          for i in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:11434/api/tags > /dev/null; then
+              echo "Ollama is ready."
+              break
+            fi
+
+            if ! kill -0 "$OLLAMA_PID" 2>/dev/null; then
+              echo "Ollama process died."
+              cat /tmp/ollama.log
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          if ! curl --silent --fail http://127.0.0.1:11434/api/tags > /dev/null; then
+            echo "Ollama failed to start."
+            cat /tmp/ollama.log
+            exit 1
+          fi
+
           ollama list
 
 
@@ -95,14 +130,22 @@ jobs:
       # ============================================================
 
       - name: Ensure llama3.1 model exists
+        timeout-minutes: 20
         run: |
-          if ollama list | grep -q "llama3.1"; then
-            echo "llama3.1 already exists in cache."
+          echo "Checking for llama3.1:latest..."
+
+          if ollama list | awk 'NR>1 {print $1}' | grep -Fxq "llama3.1:latest"; then
+            echo "llama3.1:latest found in cache."
           else
-            echo "llama3.1 not found. Downloading..."
+            echo "llama3.1:latest not found."
+            echo "Downloading llama3.1:latest..."
+
             ollama pull llama3.1:latest
+
+            echo "Download completed."
           fi
 
+          echo ""
           echo "Available Ollama models:"
           ollama list
 
