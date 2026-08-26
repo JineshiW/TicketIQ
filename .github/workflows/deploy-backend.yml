@@ -1,3 +1,4 @@
+```yaml
 name: TicketIQ Cloud Backend
 
 on:
@@ -9,8 +10,8 @@ jobs:
     timeout-minutes: 350
 
     env:
-      # Store Ollama models inside the repository workspace so
-      # GitHub Actions can cache the model between runs.
+      # Store Ollama models inside the repository workspace
+      # so GitHub Actions can cache the model between runs.
       OLLAMA_MODELS: ${{ github.workspace }}/.ollama/models
 
     steps:
@@ -44,7 +45,7 @@ jobs:
         with:
           path: |
             .ollama
-          key: ${{ runner.os }}-ollama-llama3.1-v3
+          key: ${{ runner.os }}-ollama-llama3.2-v1
           restore-keys: |
             ${{ runner.os }}-ollama-
 
@@ -169,14 +170,14 @@ jobs:
 
 
       # ============================================================
-      # 9. Ensure llama3.1:latest exists
+      # 9. Ensure llama3.2:latest exists
       # ============================================================
 
-      - name: Ensure llama3.1 model exists
-        timeout-minutes: 30
+      - name: Ensure llama3.2 model exists
+        timeout-minutes: 20
         run: |
           echo "======================================"
-          echo "Checking llama3.1:latest"
+          echo "Checking llama3.2:latest"
           echo "======================================"
 
           mkdir -p "$OLLAMA_MODELS"
@@ -189,11 +190,11 @@ jobs:
           echo "Current models:"
           ollama list
 
-          if ollama list | awk 'NR>1 {print $1}' | grep -Fxq "llama3.1:latest"; then
+          if ollama list | awk 'NR>1 {print $1}' | grep -Fxq "llama3.2:latest"; then
 
             echo ""
             echo "======================================"
-            echo "llama3.1:latest FOUND IN CACHE"
+            echo "llama3.2:latest FOUND IN CACHE"
             echo "No model download required."
             echo "======================================"
 
@@ -201,11 +202,11 @@ jobs:
 
             echo ""
             echo "======================================"
-            echo "llama3.1:latest NOT FOUND"
+            echo "llama3.2:latest NOT FOUND"
             echo "Downloading model..."
             echo "======================================"
 
-            ollama pull llama3.1:latest
+            ollama pull llama3.2:latest
 
             echo ""
             echo "======================================"
@@ -395,3 +396,4 @@ jobs:
             echo "$(date '+%Y-%m-%d %H:%M:%S') - TicketIQ backend still running..."
             sleep 300
           done
+```

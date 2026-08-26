@@ -206,7 +206,7 @@ Rewritten issue statement:"""
 
     try:
         response = ollama.chat(
-            model="llama3.1:latest",
+            model="llama3.2:latest",
             messages=[{"role": "user", "content": prompt}]
         )
         normalized = response["message"]["content"].strip()
@@ -258,7 +258,7 @@ Respond in EXACTLY this format, one line per ticket, no extra text:
 ID <id>: <rewritten statement>"""
 
     try:
-        response = ollama.chat(model="llama3.1:latest", messages=[{"role": "user", "content": prompt}])
+        response = ollama.chat(model="llama3.2:latest", messages=[{"role": "user", "content": prompt}])
         content = response["message"]["content"]
 
         for line in content.strip().split("\n"):
