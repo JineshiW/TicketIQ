@@ -159,6 +159,7 @@ jobs:
           fi
 
           nohup cloudflared tunnel run \
+            --protocol http2 \
             --token "$CLOUDFLARE_TUNNEL_TOKEN" \
             > /tmp/cloudflared.log 2>&1 &
 
