@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic
+qdrant-client
+sentence-transformers
+numpy
+scikit-learn
+hdbscan
+ollama
+langchain-core
+langchain-ollama
+langgraph
+apscheduler
+requests

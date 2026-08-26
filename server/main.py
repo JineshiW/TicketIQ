@@ -4,6 +4,8 @@ import uuid
 import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import os
 from pydantic import BaseModel, field_validator
 import ollama
 from qdrant_client.models import PointStruct
@@ -40,6 +42,33 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+# ============================================================
+# CORS
+# ============================================================
+
+# Production Vercel frontend can be supplied through the
+# environment. Multiple origins can be separated by commas.
+#
+# Local development remains supported through the defaults.
+
+allowed_origins = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,https://client-lemon-xi-13.vercel.app",
+).split(",")
+
+allowed_origins = [
+    origin.strip()
+    for origin in allowed_origins
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Ticket(BaseModel):
     id: str
@@ -177,7 +206,7 @@ Rewritten issue statement:"""
 
     try:
         response = ollama.chat(
-            model="llama3",
+            model="llama3.1:latest",
             messages=[{"role": "user", "content": prompt}]
         )
         normalized = response["message"]["content"].strip()
@@ -229,7 +258,7 @@ Respond in EXACTLY this format, one line per ticket, no extra text:
 ID <id>: <rewritten statement>"""
 
     try:
-        response = ollama.chat(model="llama3", messages=[{"role": "user", "content": prompt}])
+        response = ollama.chat(model="llama3.1:latest", messages=[{"role": "user", "content": prompt}])
         content = response["message"]["content"]
 
         for line in content.strip().split("\n"):
