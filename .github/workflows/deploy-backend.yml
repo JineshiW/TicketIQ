@@ -12,7 +12,6 @@ jobs:
       OLLAMA_MODELS: ${{ github.workspace }}/.ollama/models
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -90,17 +89,13 @@ jobs:
       - name: Ensure llama3.2 model exists
         timeout-minutes: 15
         run: |
-          echo "Checking llama3.2:latest..."
-
           if ollama list | awk 'NR>1 {print $1}' | grep -Fxq "llama3.2:latest"; then
-            echo "llama3.2:latest found in cache."
+            echo "llama3.2:latest found."
           else
-            echo "llama3.2:latest not found."
             echo "Downloading llama3.2:latest..."
             ollama pull llama3.2:latest
           fi
 
-          echo "Available Ollama models:"
           ollama list
 
       - name: Start FastAPI
@@ -146,7 +141,6 @@ jobs:
             https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 
           sudo dpkg -i cloudflared.deb
-
           cloudflared --version
 
       - name: Start Cloudflare Tunnel
@@ -184,11 +178,7 @@ jobs:
             --retry-connrefused \
             https://api.ticketiq.com/
 
-          echo ""
-          echo "======================================"
-          echo "Public API check completed"
-          echo "======================================"
-
+          echo "Public API check completed."
           echo "TicketIQ backend is LIVE."
 
       - name: Keep backend alive
