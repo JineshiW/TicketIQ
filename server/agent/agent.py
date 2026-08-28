@@ -9,7 +9,7 @@ from .agent_tools import check_recurring_patterns
 # ============================================================
 
 llm = ChatOllama(
-    model="llama3.1:latest",
+    model="llama3.2:latest",
     temperature=0,
 )
 

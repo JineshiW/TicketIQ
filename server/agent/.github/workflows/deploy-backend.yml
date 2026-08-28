@@ -58,6 +58,7 @@ jobs:
           else
             curl -fsSL https://ollama.com/install.sh | sh
           fi
+
           ollama --version
 
       - name: Start Ollama
@@ -84,6 +85,7 @@ jobs:
             exit 1
           fi
 
+          echo "Available Ollama models:"
           ollama list
 
       - name: Ensure llama3.2 model exists
@@ -96,6 +98,7 @@ jobs:
             ollama pull llama3.2:latest
           fi
 
+          echo "Ollama models:"
           ollama list
 
       - name: Start FastAPI
@@ -114,6 +117,8 @@ jobs:
           TICKETIQ_PID=$!
           echo "$TICKETIQ_PID" > /tmp/ticketiq.pid
 
+          echo "Waiting for FastAPI..."
+
           for i in {1..30}; do
             if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
               echo "FastAPI is running."
@@ -121,6 +126,7 @@ jobs:
             fi
 
             if ! kill -0 "$TICKETIQ_PID" 2>/dev/null; then
+              echo "FastAPI failed to start."
               cat /tmp/ticketiq.log
               exit 1
             fi
@@ -129,10 +135,12 @@ jobs:
           done
 
           if ! curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
+            echo "FastAPI health check failed."
             cat /tmp/ticketiq.log
             exit 1
           fi
 
+          echo "FastAPI is LIVE on port 8000."
           cat /tmp/ticketiq.log
 
       - name: Install cloudflared
@@ -141,49 +149,119 @@ jobs:
             https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 
           sudo dpkg -i cloudflared.deb
+
           cloudflared --version
 
-      - name: Start Cloudflare Tunnel
-        env:
-          CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+      - name: Start Cloudflare Quick Tunnel
         run: |
-          if [ -z "$CLOUDFLARE_TUNNEL_TOKEN" ]; then
-            echo "CLOUDFLARE_TUNNEL_TOKEN secret is missing."
-            exit 1
-          fi
+          echo "Starting Cloudflare Quick Tunnel..."
+          echo "The public backend URL will appear below."
+          echo ""
 
-          nohup cloudflared tunnel run \
-            --protocol http2 \
-            --token "$CLOUDFLARE_TUNNEL_TOKEN" \
+          nohup cloudflared tunnel \
+            --url http://127.0.0.1:8000 \
             > /tmp/cloudflared.log 2>&1 &
 
-          CLOUDFLARE_PID=$!
+          CLOUDFLARED_PID=$!
+          echo "$CLOUDFLARED_PID" > /tmp/cloudflared.pid
 
-          sleep 10
+          echo "Waiting for Quick Tunnel URL..."
 
-          if ! kill -0 "$CLOUDFLARE_PID" 2>/dev/null; then
+          TUNNEL_URL=""
+
+          for i in {1..30}; do
+            TUNNEL_URL=$(grep -oE 'https://[-a-zA-Z0-9]+\.trycloudflare\.com' /tmp/cloudflared.log | head -1 || true)
+
+            if [ -n "$TUNNEL_URL" ]; then
+              break
+            fi
+
+            if ! kill -0 "$CLOUDFLARED_PID" 2>/dev/null; then
+              echo "Cloudflare Quick Tunnel failed."
+              cat /tmp/cloudflared.log
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          if [ -z "$TUNNEL_URL" ]; then
+            echo "Could not obtain Cloudflare Quick Tunnel URL."
             cat /tmp/cloudflared.log
             exit 1
           fi
 
-          cat /tmp/cloudflared.log
+          echo ""
+          echo "=============================================="
+          echo "TICKETIQ BACKEND PUBLIC URL"
+          echo "=============================================="
+          echo "$TUNNEL_URL"
+          echo "=============================================="
+          echo ""
+          echo "Copy this URL into your Vercel environment variable."
+          echo ""
+          echo "Cloudflare Tunnel is running."
+          echo "FastAPI remains available through the tunnel."
 
-      - name: Verify public API
+      - name: Verify Quick Tunnel
         run: |
-          echo "Checking public TicketIQ API..."
+          echo "Checking Cloudflare Quick Tunnel..."
+
+          sleep 5
+
+          TUNNEL_URL=$(grep -oE 'https://[-a-zA-Z0-9]+\.trycloudflare\.com' /tmp/cloudflared.log | head -1 || true)
+
+          if [ -z "$TUNNEL_URL" ]; then
+            echo "Tunnel URL not found."
+            cat /tmp/cloudflared.log
+            exit 1
+          fi
+
+          echo "Testing:"
+          echo "$TUNNEL_URL"
 
           curl -i \
             --retry 10 \
             --retry-delay 3 \
             --retry-connrefused \
-            https://api.ticketiq.com/
+            "$TUNNEL_URL/"
 
-          echo "Public API check completed."
-          echo "TicketIQ backend is LIVE."
+          echo ""
+          echo "=============================================="
+          echo "TicketIQ backend is publicly reachable."
+          echo "=============================================="
+
+      - name: Show service status
+        run: |
+          echo "=============================================="
+          echo "TICKETIQ SERVICE STATUS"
+          echo "=============================================="
+
+          echo ""
+          echo "Ollama:"
+          curl --silent http://127.0.0.1:11434/api/tags | head -c 1000
+          echo ""
+
+          echo ""
+          echo "FastAPI:"
+          curl --silent http://127.0.0.1:8000/
+          echo ""
+
+          echo ""
+          echo "Cloudflare:"
+          cat /tmp/cloudflared.log
+
+          echo ""
+          echo "=============================================="
+          echo "All services are running."
+          echo "=============================================="
 
       - name: Keep backend alive
         run: |
+          echo ""
           echo "TicketIQ backend is running."
+          echo "Do NOT stop this GitHub Actions job while using the Vercel frontend."
+          echo ""
 
           while true; do
             echo "$(date '+%Y-%m-%d %H:%M:%S') - TicketIQ backend still running..."

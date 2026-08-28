@@ -352,7 +352,7 @@ def _fallback_cluster_characterization(tickets: list[dict]) -> dict:
     """Return a useful local classification if Ollama output is unavailable.
 
     This is deliberately only a fallback. The normal path remains the
-    llama3.1 classification above. The fallback prevents a failed/truncated
+    llama3.2 classification above. The fallback prevents a failed/truncated
     model response from turning every cluster into the generic Bug label.
     """
     import re
@@ -426,7 +426,7 @@ def _fallback_cluster_characterization(tickets: list[dict]) -> dict:
 def characterize_clusters_batch(
     cluster_groups: dict[int, list[dict]],
 ) -> dict[int, dict]:
-    """Classify repository-local clusters with llama3.1.
+    """Classify repository-local clusters with llama3.2.
 
     The previous implementation put every cluster into one large JSON
     response but limited Ollama to only 700 output tokens. With dozens of
@@ -498,7 +498,7 @@ Clusters:
 
         try:
             response = ollama.chat(
-                model="llama3.1:latest",
+                model="llama3.2:latest",
                 messages=[{"role": "user", "content": prompt}],
                 format="json",
                 options={
