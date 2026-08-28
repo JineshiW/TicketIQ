@@ -191,15 +191,75 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .stat__value--accent { color: var(--accent-3); }
 .stat__icon { color: var(--text-dim); }
 
-.table { width: 100%; border-collapse: collapse; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
 .table th {
-  text-align: left; font-size: 10.5px; letter-spacing: 0.11em; text-transform: uppercase;
-  color: var(--text-dim); font-weight: 500; padding: 10px 18px;
+  text-align: left;
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 500;
+  padding: 10px 18px;
   border-bottom: 1px solid var(--border);
 }
-.table td { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 12.5px; vertical-align: middle; }
-.table tr:last-child td { border-bottom: none; }
-.table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Keep the action buttons inside the table */
+.table th:last-child,
+.table td:last-child {
+  width: 170px;
+  white-space: nowrap;
+}
+
+/* Keep status compact */
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 110px;
+}
+
+/* Keep cluster size compact */
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 65px;
+}
+
+/* Keep first-seen date reasonably sized */
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 125px;
+}
+
+/* Allow long repository names to wrap */
+.table td:first-child {
+  overflow-wrap: anywhere;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
 
 .muted { color: var(--text-muted); }
 .dim { color: var(--text-dim); }

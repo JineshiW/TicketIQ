@@ -21,6 +21,7 @@ export function ReviewTable({
   }
 
   return (
+    <div className="table-wrap">
     <table className="table">
       <thead>
         <tr>
@@ -121,5 +122,6 @@ export function ReviewTable({
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
