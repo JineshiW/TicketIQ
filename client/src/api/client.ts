@@ -45,7 +45,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     });
   } catch (error) {
     throw new ApiError(
-      "Could not reach the TicketIQ backend. Is FastAPI running on http://127.0.0.1:8000 ?",
+      "Could not reach the TicketIQ backend. Please check that the backend service is running and accessible.",
       0,
       error,
     );
